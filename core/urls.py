@@ -7,6 +7,7 @@ from . import views
 app_name = "core"
 
 urlpatterns = [
+    path("", views.DashboardView.as_view(), name="dashboard"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path(
         "profile/password/",
@@ -27,4 +28,24 @@ urlpatterns = [
     ),
     path("select/", views.RoommateSelectView.as_view(), name="roommate_select"),
     path("verify/", views.VerifySelectionView.as_view(), name="verify_selection"),
+    path(
+        "assignments/generate/",
+        views.GenerateRoomAssignmentsView.as_view(),
+        name="generate_assignments",
+    ),
+    path(
+        "assignments/update/",
+        views.UpdateRoomAssignmentView.as_view(),
+        name="update_assignment",
+    ),
+    path(
+        "assignments/validate/",
+        views.ValidateAssignmentsView.as_view(),
+        name="validate_assignments",
+    ),
+    path(
+        "rooms/<uuid:room_id>/delete/",
+        views.DeleteRoomView.as_view(),
+        name="delete_room",
+    ),
 ]

@@ -95,3 +95,40 @@ class RoommateSelection(BaseModel):
     def __str__(self) -> str:
         """Return string representation of roommate selection."""
         return f"{self.player.name}'s selection - {self.status}"
+
+
+class Room(BaseModel):
+    """Room assignment for players."""
+
+    name = models.CharField(max_length=100)
+    is_finalized = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        """Return string representation of room."""
+        return self.name
+
+
+class RoomAssignment(BaseModel):
+    """Assignment of players to rooms."""
+
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
+        related_name="assignments",
+    )
+    player = models.ForeignKey(
+        Player,
+        on_delete=models.CASCADE,
+        related_name="room_assignments",
+    )
+
+    class Meta:
+        ordering = ["room", "player"]
+        unique_together = ["room", "player"]
+
+    def __str__(self) -> str:
+        """Return string representation of room assignment."""
+        return f"{self.player.name} in {self.room.name}"

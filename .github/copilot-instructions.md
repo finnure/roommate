@@ -27,6 +27,14 @@ Follow these rules for all suggestions:
 4. **Lint/Format**: Black, isort, flake8. Pre-commit hooks.
 5. **Testing**: `pytest -v --cov=core`.
 6. **No Bloat**: Minimal deps; justify additions.
+7. **CHANGELOG Updates**: After completing any new feature or significant change, automatically update CHANGELOG.md with:
+   - A descriptive title for the feature
+   - The original user input/request
+   - What was created/implemented
+   - Key features and functionality
+   - How to use/test the feature
+   - Technical implementation details
+   Follow the existing format in CHANGELOG.md for consistency.
 
 Example model:
 ```python
@@ -40,3 +48,4 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+```

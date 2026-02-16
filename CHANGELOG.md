@@ -118,3 +118,79 @@ Enter the code to verify
 See the confirmation page
 The system is now ready for SMS/email integration for sending verification codes!
 
+
+# Admin Dashboard with Room Assignment Management
+
+Input:
+```
+next i need a page for the admin to view all the selections. It should show statistics about number of players, how many links are unused, how many have been submitted, and any other relevant information you can think of. if all the links have been used and all players have been sent a link, try to create a suggestion for room pairing based on all the selections. The room pairing should be editable by the admin, and there should be a validate button that checks the current selection and reports if all players have been assigned to a room.
+```
+
+What's Been Created
+
+**Models**
+- `Room`: Manages room entities with name and finalization status
+- `RoomAssignment`: Links players to rooms with UUID-based tracking
+
+**Views**
+- `DashboardView`: Main dashboard displaying comprehensive statistics and room assignments
+- `GenerateRoomAssignmentsView`: Intelligent room pairing algorithm based on player preferences
+- `UpdateRoomAssignmentView`: Edit existing room assignments
+- `ValidateAssignmentsView`: Verify all players are assigned to rooms
+- `DeleteRoomView`: Remove non-finalized rooms
+
+**Dashboard Features**
+
+Statistics Cards:
+- Total Players count
+- Selection Links (used/unused breakdown)
+- Players with Links (shows deficit if any)
+- Verified vs Draft selections
+
+Room Assignment System:
+- Automatic generation based on mutual preferences
+- Smart algorithm prioritizing mutual roommate selections
+- Editable room assignments via dropdown selectors
+- Validation to ensure all players are assigned
+- Delete rooms capability (for non-finalized only)
+
+**Room Pairing Algorithm**
+
+The system uses a sophisticated matching algorithm:
+1. First Pass: Identifies groups with mutual preferences (all 3 players selected each other)
+2. Second Pass: Assigns remaining players based on their top preferences
+3. Ensures 3 players per room when possible
+4. Handles edge cases with partial rooms
+
+**Admin Capabilities**
+- View comprehensive statistics at a glance
+- Generate room assignments when all selections are complete
+- Manually adjust room assignments via dropdown menus
+- Validate that all players are assigned
+- Delete and regenerate assignments as needed
+- Track which rooms are finalized vs editable
+
+**How to Use**
+
+1. Visit http://127.0.0.1:8000/ (Dashboard is now the home page)
+2. Review statistics to see selection progress
+3. Once all players have verified selections, click "Generate Room Assignments"
+4. Review generated room pairings (optimized for mutual preferences)
+5. Manually adjust any room using the dropdown selectors
+6. Click "Update Room" to save changes
+7. Click "Validate Assignments" to verify all players are assigned
+8. Delete and regenerate rooms as needed before finalizing
+
+**Technical Implementation**
+- Uses Django's prefetch_related for optimized queries
+- Atomic transactions ensure data consistency
+- Preference graph algorithm for optimal room matching
+- Real-time validation feedback
+- Non-finalized rooms can be edited/deleted
+- All models registered in Django admin for manual override
+
+**Navigation**
+- Dashboard added as first menu item
+- Accessible at root URL (/)
+- Shows full statistics and room management interface
+

@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import Player, RoommateSelection, SelectionLink
+from .models import Player, Room, RoomAssignment, RoommateSelection, SelectionLink
 
 
 @admin.register(Player)
@@ -53,3 +53,24 @@ class RoommateSelectionAdmin(admin.ModelAdmin):
         "roommate_2",
         "roommate_3",
     ]
+
+
+@admin.register(Room)
+class RoomAdmin(admin.ModelAdmin):
+    """Admin for Room model."""
+
+    list_display = ["name", "is_finalized", "created_at"]
+    list_filter = ["is_finalized", "created_at"]
+    search_fields = ["name"]
+    readonly_fields = ["id", "created_at", "updated_at"]
+
+
+@admin.register(RoomAssignment)
+class RoomAssignmentAdmin(admin.ModelAdmin):
+    """Admin for RoomAssignment model."""
+
+    list_display = ["room", "player", "created_at"]
+    list_filter = ["room", "created_at"]
+    search_fields = ["room__name", "player__name"]
+    readonly_fields = ["id", "created_at", "updated_at"]
+    raw_id_fields = ["room", "player"]
