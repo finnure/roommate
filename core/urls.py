@@ -26,6 +26,12 @@ urlpatterns = [
         views.GenerateSelectionLinkView.as_view(),
         name="generate_link",
     ),
+    path("selections/", views.SelectionsView.as_view(), name="selections"),
+    path(
+        "selections/export/",
+        views.ExportSelectionsView.as_view(),
+        name="export_selections",
+    ),
     path("select/", views.RoommateSelectView.as_view(), name="roommate_select"),
     path("verify/", views.VerifySelectionView.as_view(), name="verify_selection"),
     path(

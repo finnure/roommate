@@ -194,3 +194,70 @@ The system uses a sophisticated matching algorithm:
 - Accessible at root URL (/)
 - Shows full statistics and room management interface
 
+
+# Selections View with CSV Export
+
+Input:
+```
+Add a new page for the admin to view the results of all selections with an option to export to csv
+```
+
+**What's Been Created**
+
+**Views**
+- `SelectionsView`: ListView displaying all roommate selections with statistics
+- `ExportSelectionsView`: CSV export functionality for verified selections
+
+**Templates**
+- `selections.html`: Comprehensive table view of all selections with statistics cards
+
+**Features**
+
+**Selections Page** (`/selections/`)
+- Complete table view of all player selections
+- Displays player contact information (email, phone)
+- Shows all 3 roommate choices with numbered badges
+- Status badges (Verified/Draft) with color coding
+- Timestamp for each submission
+- Statistics cards showing:
+  - Total selections count
+  - Verified selections count
+  - Draft selections count
+- Pagination support (50 items per page)
+
+**CSV Export**
+- Export button prominently displayed at top of page
+- Downloads as `roommate_selections.csv`
+- Includes only verified selections
+- Ordered by player name
+- Contains columns:
+  - Player Name
+  - Player Email
+  - Player Phone
+  - First Choice
+  - Second Choice
+  - Third Choice
+  - Status
+  - Submitted At (formatted as YYYY-MM-DD HH:MM:SS)
+
+**Navigation**
+- "Selections" link added to main navigation menu
+- Positioned between "Players" and "Admin"
+
+**How to Use**
+
+1. Visit http://127.0.0.1:8000/selections/
+2. View all player selections in a comprehensive table
+3. Review statistics at a glance with the statistics cards
+4. Click "Export to CSV" to download all verified selections
+5. Open CSV file in Excel, Google Sheets, or any spreadsheet application
+6. Use exported data for record-keeping or external processing
+
+**Technical Implementation**
+- Uses `select_related` for optimized database queries
+- CSV writer from Python's standard library
+- Pagination for large datasets
+- Status filtering to separate verified from draft selections
+- Responsive table design with Tailwind CSS
+- Download triggered with proper HTTP headers for file attachment
+

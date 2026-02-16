@@ -1,5 +1,6 @@
 """Views for core app."""
 
+import csv
 import random
 from collections import defaultdict
 from typing import Dict, List, Set
@@ -9,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView
 from django.db import transaction
 from django.db.models import Count, Q
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -510,3 +511,94 @@ class DeleteRoomView(LoginRequiredMixin, View):
         room.delete()
         messages.success(request, f"Deleted {room_name}")
         return redirect("core:dashboard")
+
+
+class SelectionsView(LoginRequiredMixin, ListView):
+    """View all roommate selections."""
+
+    model = RoommateSelection
+    template_name = "core/selections.html"
+    context_object_name = "selections"
+    paginate_by = 50
+
+    def get_queryset(self):
+        """Get all selections with related data."""
+        return RoommateSelection.objects.select_related(
+            "player", "roommate_1", "roommate_2", "roommate_3", "selection_link"
+        ).order_by("-created_at")
+
+    def get_context_data(self, **kwargs):
+        """Add statistics to context."""
+        context = super().get_context_data(**kwargs)
+
+        # Statistics
+        total_selections = RoommateSelection.objects.count()
+        verified_selections = RoommateSelection.objects.filter(
+            status="verified"
+        ).count()
+        draft_selections = RoommateSelection.objects.filter(status="draft").count()
+
+        context.update(
+            {
+                "total_selections": total_selections,
+                "verified_selections": verified_selections,
+                "draft_selections": draft_selections,
+            }
+        )
+
+        return context
+
+
+class ExportSelectionsView(LoginRequiredMixin, View):
+    """Export all verified selections to CSV."""
+
+    def get(self, request):
+        """Generate and return CSV file."""
+        # Create the HttpResponse object with CSV header
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            'attachment; filename="roommate_selections.csv"'
+        )
+
+        # Create CSV writer
+        writer = csv.writer(response)
+
+        # Write header row
+        writer.writerow(
+            [
+                "Player Name",
+                "Player Email",
+                "Player Phone",
+                "First Choice",
+                "Second Choice",
+                "Third Choice",
+                "Status",
+                "Submitted At",
+            ]
+        )
+
+        # Get all verified selections
+        selections = (
+            RoommateSelection.objects.select_related(
+                "player", "roommate_1", "roommate_2", "roommate_3"
+            )
+            .filter(status="verified")
+            .order_by("player__name")
+        )
+
+        # Write data rows
+        for selection in selections:
+            writer.writerow(
+                [
+                    selection.player.name,
+                    selection.player.email,
+                    selection.player.phone,
+                    selection.roommate_1.name,
+                    selection.roommate_2.name,
+                    selection.roommate_3.name,
+                    selection.status.capitalize(),
+                    selection.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                ]
+            )
+
+        return response

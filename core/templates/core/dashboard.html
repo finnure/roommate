@@ -195,8 +195,8 @@
                 <option value="">-- Select Player --</option>
                 {% for player in all_players %}
                 <option value="{{ player.id }}" {% for assignment in room.assignments.all %} {% if
-                  assignment.player.id==player.id and forloop.parentloop.counter==forloop.counter %}selected{% endif %}
-                  {% endfor %}>
+                  assignment.player.id==player.id and forloop.parentloop.counter==forloop.counter %} selected {% endif
+                  %} {% endfor %}>
                   {{ player.name }}
                 </option>
                 {% endfor %}
