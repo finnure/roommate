@@ -1,7 +1,6 @@
 """Views for core app."""
 
 import csv
-import random
 from collections import defaultdict
 from typing import Dict, List, Set
 
@@ -153,12 +152,12 @@ class RoommateSelectView(View):
 
         # Validate all selections are made
         if not all([roommate_1_id, roommate_2_id, roommate_3_id]):
-            messages.error(request, "Please select all 3 roommates.")
+            messages.error(request, "Vinsamlegast veldu alla 3 herbergisfélaga.")
             return redirect(f"{reverse_lazy('core:roommate_select')}?id={link_id}")
 
         # Validate no duplicates
         if len(set([roommate_1_id, roommate_2_id, roommate_3_id])) != 3:
-            messages.error(request, "You cannot select the same roommate twice.")
+            messages.error(request, "Þú getur ekki valið sama leikmanninn tvisvar.")
             return redirect(f"{reverse_lazy('core:roommate_select')}?id={link_id}")
 
         # Get roommate objects
@@ -168,30 +167,34 @@ class RoommateSelectView(View):
 
         # Validate none of the roommates is the current player
         if player.id in [roommate_1.id, roommate_2.id, roommate_3.id]:
-            messages.error(request, "You cannot select yourself as a roommate.")
+            messages.error(
+                request, "Þú getur ekki valið sjálfan þig sem herbergisfélaga."
+            )
             return redirect(f"{reverse_lazy('core:roommate_select')}?id={link_id}")
 
-        # Generate 2-digit verification code
-        verification_code = str(random.randint(10, 99))
-
-        # Create or update the draft selection
+        # Create or update the selection directly as verified
         selection, created = RoommateSelection.objects.update_or_create(
             selection_link=selection_link,
-            status="draft",
             defaults={
                 "player": player,
                 "roommate_1": roommate_1,
                 "roommate_2": roommate_2,
                 "roommate_3": roommate_3,
-                "verification_code": verification_code,
+                "status": "verified",
+                "verification_code": "",  # No longer needed
             },
         )
 
-        # TODO: Send verification code via SMS/email
-        # For now, we'll just display it on the verification page
+        # Mark the selection link as used
+        selection_link.is_used = True
+        selection_link.save()
 
-        return redirect(
-            f"{reverse_lazy('core:verify_selection')}?selection_id={selection.id}"
+        return render(
+            request,
+            "core/selection_verified.html",
+            {
+                "selection": selection,
+            },
         )
 
 

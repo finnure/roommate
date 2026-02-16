@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="is">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Roommate Selection - {{ player.name }}</title>
+  <title>Herbergisfélagar - {{ player.name }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -16,7 +16,7 @@
           Halló {{ player.name }}!
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
-          Please select 3 roommates you would like to room with on the Portugal trip.
+          Vinsamlegast veldu 3 leikmenn sem þú vilt vera með í herbergi í Portúgal-ferðinni.
         </p>
       </div>
 
@@ -41,12 +41,12 @@
         <div class="space-y-6">
           <div>
             <label for="roommate_1" class="block text-sm font-medium text-gray-700 mb-2">
-              First Roommate Choice
+              Fyrsti valmöguleiki
             </label>
             <select id="roommate_1" name="roommate_1" required
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
               onchange="updateDropdowns()">
-              <option value="">Select a player...</option>
+              <option value="">Veldu leikmann...</option>
               {% for other_player in other_players %}
               <option value="{{ other_player.id }}" data-player-id="{{ other_player.id }}">
                 {{ other_player.name }}
@@ -57,12 +57,12 @@
 
           <div id="roommate_2_container" style="display: none;">
             <label for="roommate_2" class="block text-sm font-medium text-gray-700 mb-2">
-              Second Roommate Choice
+              Annar valmöguleiki
             </label>
             <select id="roommate_2" name="roommate_2"
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
               onchange="updateDropdowns()">
-              <option value="">Select a player...</option>
+              <option value="">Veldu leikmann...</option>
               {% for other_player in other_players %}
               <option value="{{ other_player.id }}" data-player-id="{{ other_player.id }}">
                 {{ other_player.name }}
@@ -73,12 +73,12 @@
 
           <div id="roommate_3_container" style="display: none;">
             <label for="roommate_3" class="block text-sm font-medium text-gray-700 mb-2">
-              Third Roommate Choice
+              Þriðji valmöguleiki
             </label>
             <select id="roommate_3" name="roommate_3"
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
               onchange="updateDropdowns()">
-              <option value="">Select a player...</option>
+              <option value="">Veldu leikmann...</option>
               {% for other_player in other_players %}
               <option value="{{ other_player.id }}" data-player-id="{{ other_player.id }}">
                 {{ other_player.name }}
@@ -91,7 +91,7 @@
         <div class="pt-4">
           <button type="submit" id="submit_btn" disabled
             class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed">
-            Submit Selections
+            Staðfesta val
           </button>
         </div>
       </form>
