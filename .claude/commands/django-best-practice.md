@@ -1,7 +1,7 @@
 # Django Best Practices for this Project
 
 ## Tech Stack & Constraints
-- Django 5.x (or latest stable) on Python 3.14 venv.
+- Django 6.x (or latest stable) on Python 3.14 venv.
 - Ubuntu WSL, VS Code with Python extension + venv selected (`./.venv/bin/python`).
 - Use async views/DRF where possible; class-based views (CBVs) preferred.
 - PostgreSQL for prod, SQLite for dev.

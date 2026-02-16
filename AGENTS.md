@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Environment
-Python 3.14 venv (WSL Ubuntu), Django 5.x, VS Code with `./.venv/bin/python`
+Python 3.14 venv (WSL Ubuntu), Django 6.x, VS Code with `./.venv/bin/python`
 
 ## Architecture
 - Monolith: core/ app handles models/views/URLs
