@@ -18,4 +18,12 @@ urlpatterns = [
         views.PasswordChangeDoneView.as_view(),
         name="password_change_done",
     ),
+    path("players/", views.PlayerListView.as_view(), name="player_list"),
+    path("players/create/", views.PlayerCreateView.as_view(), name="player_create"),
+    path(
+        "players/<uuid:player_id>/generate-link/",
+        views.GenerateSelectionLinkView.as_view(),
+        name="generate_link",
+    ),
+    path("select/", views.ProfileView.as_view(), name="roommate_select"),  # Placeholder for now
 ]
