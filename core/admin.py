@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import Player, SelectionLink
+from .models import Player, RoommateSelection, SelectionLink
 
 
 @admin.register(Player)
@@ -24,3 +24,26 @@ class SelectionLinkAdmin(admin.ModelAdmin):
     search_fields = ["player__name"]
     readonly_fields = ["id", "created_at", "updated_at"]
     raw_id_fields = ["player"]
+
+
+@admin.register(RoommateSelection)
+class RoommateSelectionAdmin(admin.ModelAdmin):
+    """Admin for RoommateSelection model."""
+
+    list_display = [
+        "player",
+        "roommate_1",
+        "roommate_2",
+        "roommate_3",
+        "status",
+        "created_at",
+    ]
+    list_filter = ["status", "created_at"]
+    search_fields = [
+        "player__name",
+        "roommate_1__name",
+        "roommate_2__name",
+        "roommate_3__name",
+    ]
+    readonly_fields = ["id", "verification_code", "created_at", "updated_at"]
+    raw_id_fields = ["player", "selection_link", "roommate_1", "roommate_2", "roommate_3"]

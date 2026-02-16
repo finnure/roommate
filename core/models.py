@@ -47,3 +47,51 @@ class SelectionLink(BaseModel):
     def __str__(self) -> str:
         """Return string representation of selection link."""
         return f"Link for {self.player.name} - {self.id}"
+
+
+class RoommateSelection(BaseModel):
+    """Roommate selection for a player."""
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("verified", "Verified"),
+    ]
+
+    player = models.ForeignKey(
+        Player,
+        on_delete=models.CASCADE,
+        related_name="roommate_selections",
+    )
+    selection_link = models.ForeignKey(
+        SelectionLink,
+        on_delete=models.CASCADE,
+        related_name="selections",
+    )
+    roommate_1 = models.ForeignKey(
+        Player,
+        on_delete=models.CASCADE,
+        related_name="selected_by_as_1",
+    )
+    roommate_2 = models.ForeignKey(
+        Player,
+        on_delete=models.CASCADE,
+        related_name="selected_by_as_2",
+    )
+    roommate_3 = models.ForeignKey(
+        Player,
+        on_delete=models.CASCADE,
+        related_name="selected_by_as_3",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+    )
+    verification_code = models.CharField(max_length=2)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        """Return string representation of roommate selection."""
+        return f"{self.player.name}'s selection - {self.status}"

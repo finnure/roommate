@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selection Already Complete</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8">
+                <div class="text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                        Selection Already Complete
+                    </h2>
+                    <p class="text-sm text-gray-600 mb-6">
+                        {{ player.name }}, you have already completed your roommate selection.
+                    </p>
+                </div>
+
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Your Previous Selections:</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-800 font-semibold mr-3">1</span>
+                            <span class="text-gray-900">{{ selection.roommate_1.name }}</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-800 font-semibold mr-3">2</span>
+                            <span class="text-gray-900">{{ selection.roommate_2.name }}</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-800 font-semibold mr-3">3</span>
+                            <span class="text-gray-900">{{ selection.roommate_3.name }}</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mt-6 bg-gray-50 border border-gray-200 rounded-md p-4">
+                    <p class="text-sm text-gray-700">
+                        This selection link has already been used and cannot be used again. If you need to make changes, please contact the trip organizer.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
