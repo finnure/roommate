@@ -1,4 +1,5 @@
 """Views for core app."""
+
 import random
 
 from django.contrib import messages

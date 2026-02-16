@@ -46,4 +46,10 @@ class RoommateSelectionAdmin(admin.ModelAdmin):
         "roommate_3__name",
     ]
     readonly_fields = ["id", "verification_code", "created_at", "updated_at"]
-    raw_id_fields = ["player", "selection_link", "roommate_1", "roommate_2", "roommate_3"]
+    raw_id_fields = [
+        "player",
+        "selection_link",
+        "roommate_1",
+        "roommate_2",
+        "roommate_3",
+    ]
