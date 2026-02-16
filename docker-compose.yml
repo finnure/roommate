@@ -99,8 +99,8 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
-      - certbot_conf:/etc/letsencrypt:ro
-      - certbot_www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     depends_on:
       - web
     networks:
@@ -116,8 +116,8 @@ services:
     image: certbot/dns-cloudflare:latest
     container_name: roommate_certbot
     volumes:
-      - certbot_conf:/etc/letsencrypt
-      - certbot_www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
       - ./certbot/cloudflare.ini:/etc/letsencrypt/cloudflare.ini:ro
     env_file:
       - .env.prod
@@ -131,8 +131,6 @@ volumes:
   redis_data:
   static_volume:
   media_volume:
-  certbot_conf:
-  certbot_www:
 
 networks:
   roommate_network:

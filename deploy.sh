@@ -27,11 +27,11 @@ if [ ! -d "certbot/conf/live/$CERTBOT_DOMAIN" ]; then
 fi
 
 echo "Building Docker images..."
-docker-compose build
+docker-compose --env-file .env.prod build
 
 echo ""
 echo "Starting services..."
-docker-compose up -d
+docker-compose --env-file .env.prod up -d
 
 echo ""
 echo "Waiting for database to be ready..."
@@ -39,15 +39,15 @@ sleep 10
 
 echo ""
 echo "Running database migrations..."
-docker-compose exec -T web python manage.py migrate --noinput
+docker-compose --env-file .env.prod exec -T web python manage.py migrate --noinput
 
 echo ""
 echo "Collecting static files..."
-docker-compose exec -T web python manage.py collectstatic --noinput
+docker-compose --env-file .env.prod exec -T web python manage.py collectstatic --noinput
 
 echo ""
 echo "Creating superuser (if not exists)..."
-docker-compose exec -T web python manage.py shell <<EOF
+docker-compose --env-file .env.prod exec -T web python manage.py shell <<EOF
 from django.contrib.auth import get_user_model
 User = get_user_model()
 if not User.objects.filter(username='admin').exists():
@@ -64,6 +64,6 @@ echo ""
 echo "Application is running at: https://$CERTBOT_DOMAIN"
 echo "Admin panel: https://$CERTBOT_DOMAIN/admin/"
 echo ""
-echo "To view logs: docker-compose logs -f"
-echo "To stop: docker-compose down"
+echo "To view logs: docker-compose --env-file .env.prod logs -f"
+echo "To stop: docker-compose --env-file .env.prod down"
 echo ""

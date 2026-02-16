@@ -51,8 +51,7 @@ certbot/
 # Nginx
 nginx/
 
-# Scripts
-*.sh
+# Scripts (deployment only, keep entrypoint.sh)
 deploy.sh
 init-letsencrypt.sh
 

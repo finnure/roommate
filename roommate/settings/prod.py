@@ -45,17 +45,13 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django.core.cache.backends.redis.RedisClient",
-        },
         "KEY_PREFIX": "roommate",
         "TIMEOUT": 300,
     }
 }
 
-# Session backend
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
+# Session backend - use database instead of cache for now
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # Celery Configuration
 CELERY_BROKER_URL = REDIS_URL
