@@ -54,4 +54,5 @@ urlpatterns = [
         views.DeleteRoomView.as_view(),
         name="delete_room",
     ),
+    path("health/", views.health_check, name="health_check"),
 ]

@@ -59,12 +59,12 @@ db.sqlite3
 db.sqlite3-journal
 media/
 staticfiles/
-.env*
-*.env
 
 # Environment variables / secrets
 .env
 .env.local
+.env.dev
+.env.prod
 .env.*.local
 
 # Virtual environments
@@ -109,9 +109,6 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Docker
-.dockerignore
-
 # IDE / Editor
 .history/
 
@@ -144,3 +141,11 @@ celerybeat.pid
 # Coverage
 .coverage
 coverage.xml
+
+# Production deployment
+.env.prod
+certbot/cloudflare.ini
+certbot/conf/
+certbot/www/
+postgres_data/
+redis_data/

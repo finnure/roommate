@@ -1,0 +1,12 @@
+# Cloudflare API credentials for DNS authentication
+# This file is used by certbot to authenticate with Cloudflare DNS
+# 
+# Option 1: API Token (Recommended)
+# Create a token at https://dash.cloudflare.com/profile/api-tokens
+# with Zone:DNS:Edit permissions for your domain
+dns_cloudflare_api_token = YOUR_CLOUDFLARE_API_TOKEN_HERE
+
+# Option 2: Global API Key (Less secure)
+# If you prefer to use Global API Key instead:
+# dns_cloudflare_email = your-email@example.com
+# dns_cloudflare_api_key = YOUR_GLOBAL_API_KEY_HERE

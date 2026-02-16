@@ -1,0 +1,79 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.mypy_cache
+.pytest_cache
+.coverage
+htmlcov
+
+# Virtual environments
+.venv
+venv
+ENV
+env
+
+# Development database
+db.sqlite3
+db.sqlite3-journal
+
+# Environment files
+.env
+.env.*
+!.env.prod
+
+# Documentation
+*.md
+DEPLOYMENT.md
+CHANGELOG.md
+AGENTS.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Certbot
+certbot/
+
+# Nginx
+nginx/
+
+# Scripts
+*.sh
+deploy.sh
+init-letsencrypt.sh
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Static and media (will be generated)
+staticfiles/
+media/
+
+# Docker volumes
+postgres_data/
+redis_data/

@@ -1,3 +1,233 @@
+# CHANGELOG
+
+## Production Deployment Setup - February 16, 2026
+
+### User Request
+Deploy the project to production using Docker Compose with Nginx as proxy and Certbot to handle certificates from Let's Encrypt. Use Cloudflare DNS authentication when generating certificates. All secrets and connection strings should be configured in environment variables.
+
+### What Was Created
+
+#### Docker Configuration
+- **Dockerfile**: Multi-stage production-ready Django application container
+  - Python 3.14 slim base image
+  - Gunicorn WSGI server with 4 workers
+  - Non-root user for security
+  - Health checks configured
+  - Automated static file collection
+
+- **docker-compose.yml**: Complete orchestration with 7 services
+  - `db`: PostgreSQL 16 with health checks
+  - `redis`: Redis 7 for caching and Celery broker
+  - `web`: Django application with Gunicorn
+  - `celery`: Background task worker
+  - `celery-beat`: Periodic task scheduler
+  - `nginx`: Reverse proxy with SSL termination
+  - `certbot`: Automated SSL certificate management
+
+- **entrypoint.sh**: Container initialization script
+  - Waits for database and Redis availability
+  - Runs migrations automatically
+  - Collects static files
+  - Ensures proper startup order
+
+#### Nginx Configuration
+- **nginx/nginx.conf**: Main Nginx configuration
+  - Optimized worker processes
+  - Gzip compression enabled
+  - 20MB client upload limit
+  - Security headers
+
+- **nginx/conf.d/default.conf**: Site-specific configuration
+  - HTTP to HTTPS redirect
+  - SSL/TLS 1.2 and 1.3 support
+  - Modern cipher suites
+  - Security headers (HSTS, XSS protection, etc.)
+  - Static and media file serving with caching
+  - Proxy configuration for Django application
+
+#### Django Settings Restructure
+- **roommate/settings/base.py**: Shared settings
+- **roommate/settings/dev.py**: Development environment
+- **roommate/settings/prod.py**: Production environment with:
+  - PostgreSQL database configuration
+  - Redis caching and sessions
+  - Celery configuration
+  - Security settings (SSL, HSTS, secure cookies)
+  - Email configuration support
+  - Comprehensive logging
+
+#### Celery Setup
+- **roommate/celery.py**: Celery application configuration
+- **roommate/__init__.py**: Auto-import Celery app
+- Configured for background tasks and scheduled jobs
+
+#### Environment Configuration
+- **.env.prod.example**: Template for production environment variables
+  - Django settings (SECRET_KEY, DEBUG, ALLOWED_HOSTS)
+  - Database credentials
+  - Redis password
+  - Email configuration
+  - Let's Encrypt settings
+  - Cloudflare API token
+
+- **certbot/cloudflare.ini.example**: Cloudflare DNS credentials template
+  - API token configuration
+  - Instructions for token creation
+
+#### Deployment Scripts
+- **init-letsencrypt.sh**: Initial SSL certificate setup
+  - Validates configuration files exist
+  - Obtains first SSL certificate via Cloudflare DNS
+  - Sets proper file permissions
+
+- **deploy.sh**: Automated deployment script
+  - Checks prerequisites
+  - Builds Docker images
+  - Starts all services
+  - Runs migrations
+  - Collects static files
+  - Creates superuser if needed
+
+#### Documentation
+- **DEPLOYMENT.md**: Comprehensive deployment guide
+  - Prerequisites and requirements
+  - Cloudflare setup instructions
+  - Step-by-step deployment process
+  - Maintenance procedures
+  - Troubleshooting guide
+  - Architecture diagram
+  - Environment variable reference
+
+#### Additional Files
+- **.gitignore**: Updated with production-specific ignores
+- **.dockerignore**: Optimized Docker build context
+- **requirements.txt**: Added production dependencies
+  - gunicorn==23.0.0
+  - psycopg2-binary==2.9.10
+  - redis==5.2.1
+  - celery==5.4.0
+
+### Key Features
+
+1. **SSL/TLS Security**
+   - Automated Let's Encrypt certificate generation
+   - Cloudflare DNS-01 challenge for validation
+   - Auto-renewal every 12 hours
+   - Modern TLS configuration
+
+2. **Production-Ready Infrastructure**
+   - PostgreSQL for robust data persistence
+   - Redis for caching and session storage
+   - Celery for background task processing
+   - Nginx as high-performance reverse proxy
+
+3. **Security Hardening**
+   - All secrets in environment variables
+   - Non-root container users
+   - HTTPS-only in production
+   - Security headers (HSTS, XSS protection, etc.)
+   - Secure cookie settings
+
+4. **High Availability**
+   - Health checks for all services
+   - Automatic container restart
+   - Connection pooling for database
+   - Graceful degradation
+
+5. **Developer Experience**
+   - One-command deployment
+   - Automated migrations
+   - Comprehensive documentation
+   - Easy local development with separate settings
+
+### How to Deploy
+
+1. **Prerequisites:**
+   - Linux server with Docker and Docker Compose
+   - Domain pointing to server IP (roommate.klauvi.is)
+   - Cloudflare DNS management
+   - Cloudflare API token with DNS edit permissions
+
+2. **Configuration:**
+   ```bash
+   cp .env.prod.example .env.prod
+   cp certbot/cloudflare.ini.example certbot/cloudflare.ini
+   # Edit both files with your credentials
+   ```
+
+3. **Deploy:**
+   ```bash
+   chmod +x deploy.sh init-letsencrypt.sh
+   ./deploy.sh
+   ```
+
+4. **Access:**
+   - Application: https://roommate.klauvi.is
+   - Admin: https://roommate.klauvi.is/admin/
+
+### Technical Implementation
+
+**Container Orchestration:**
+- Docker Compose with named volumes for data persistence
+- Bridge networking for inter-container communication
+- Health checks ensure services are ready before dependent services start
+
+**Database:**
+- PostgreSQL with connection pooling (CONN_MAX_AGE: 600)
+- Persistent volume for data
+- Automated migrations on startup
+
+**Caching & Sessions:**
+- Redis-backed caching for improved performance
+- Redis-backed sessions for scalability
+- Password-protected Redis instance
+
+**Background Tasks:**
+- Celery worker for async task processing
+- Celery beat for scheduled tasks
+- Redis as message broker
+
+**Web Server:**
+- Gunicorn with 4 workers and 120s timeout
+- Nginx reverse proxy with SSL termination
+- Static file serving with 30-day cache
+- Media file serving with 7-day cache
+
+**SSL/TLS:**
+- Let's Encrypt certificates via Certbot
+- DNS-01 challenge using Cloudflare plugin
+- Automatic renewal in background container
+- TLS 1.2/1.3 only with secure ciphers
+
+### Maintenance Commands
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Restart services
+docker-compose restart
+
+# Update application
+git pull && docker-compose up -d --build
+
+# Database backup
+docker-compose exec db pg_dump -U roommate_user roommate > backup.sql
+
+# Django management
+docker-compose exec web python manage.py <command>
+```
+
+### Security Notes
+
+- Never commit `.env.prod` or `certbot/cloudflare.ini` to version control
+- Change the default admin password immediately after deployment
+- Keep Docker images and Python packages updated
+- Set up regular automated backups
+- Monitor logs for suspicious activity
+
+---
+
 # Create admin page with user
 
 Input:

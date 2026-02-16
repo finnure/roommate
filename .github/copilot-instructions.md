@@ -35,6 +35,8 @@ Follow these rules for all suggestions:
    - How to use/test the feature
    - Technical implementation details
    Follow the existing format in CHANGELOG.md for consistency.
+8. **Documentation**: Update README.md and relevant docs with new features or changes.
+9. **Bugfixes**: Update changelog with bug fixes with a brief description of the fix.
 
 Example model:
 ```python

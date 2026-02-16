@@ -1,0 +1,36 @@
+version: '3.8'
+
+# Override file for local development
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app  # Mount code for hot reload
+    environment:
+      - DJANGO_ENV=dev
+      - DEBUG=True
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+
+  db:
+    ports:
+      - "5432:5432"  # Expose PostgreSQL for local access
+
+  redis:
+    ports:
+      - "6379:6379"  # Expose Redis for local access
+
+  nginx:
+    # Skip nginx in dev, access Django directly
+    profiles:
+      - production
+
+  certbot:
+    # Skip certbot in dev
+    profiles:
+      - production

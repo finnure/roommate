@@ -602,3 +602,8 @@ class ExportSelectionsView(LoginRequiredMixin, View):
             )
 
         return response
+
+
+def health_check(request):
+    """Simple health check endpoint for Docker/k8s."""
+    return JsonResponse({"status": "healthy", "service": "roommate"})
