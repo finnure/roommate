@@ -4,107 +4,94 @@
 
 {% block content %}
 <div class="px-4 py-6 sm:px-0">
-    <div class="md:grid md:grid-cols-3 md:gap-6">
-        <div class="md:col-span-1">
-            <div class="px-4 sm:px-0">
-                <h3 class="text-lg font-medium leading-6 text-gray-900">Player Information</h3>
-                <p class="mt-1 text-sm text-gray-600">
-                    Add a new player to the roommate assignment system.
-                </p>
-            </div>
-        </div>
-        <div class="mt-5 md:col-span-2 md:mt-0">
-            <form method="post">
-                {% csrf_token %}
-                <div class="shadow sm:overflow-hidden sm:rounded-md">
-                    <div class="space-y-6 bg-white px-4 py-5 sm:p-6">
-                        {% if form.non_field_errors %}
-                        <div class="rounded-md bg-red-50 p-4">
-                            <div class="flex">
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-red-800">
-                                        There were errors with your submission
-                                    </h3>
-                                    <div class="mt-2 text-sm text-red-700">
-                                        <ul class="list-disc pl-5 space-y-1">
-                                            {% for error in form.non_field_errors %}
-                                            <li>{{ error }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <div>
-                            <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                                Name <span class="text-red-500">*</span>
-                            </label>
-                            <div class="mt-1">
-                                <input 
-                                    type="text" 
-                                    name="{{ form.name.name }}" 
-                                    id="{{ form.name.id_for_label }}" 
-                                    required
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm {% if form.name.errors %}border-red-300{% endif %}"
-                                    value="{{ form.name.value|default:'' }}"
-                                >
-                            </div>
-                            {% if form.name.errors %}
-                            <p class="mt-2 text-sm text-red-600">{{ form.name.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div>
-                            <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                                Phone <span class="text-red-500">*</span>
-                            </label>
-                            <div class="mt-1">
-                                <input 
-                                    type="tel" 
-                                    name="{{ form.phone.name }}" 
-                                    id="{{ form.phone.id_for_label }}" 
-                                    required
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm {% if form.phone.errors %}border-red-300{% endif %}"
-                                    value="{{ form.phone.value|default:'' }}"
-                                >
-                            </div>
-                            {% if form.phone.errors %}
-                            <p class="mt-2 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div>
-                            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                                Email <span class="text-red-500">*</span>
-                            </label>
-                            <div class="mt-1">
-                                <input 
-                                    type="email" 
-                                    name="{{ form.email.name }}" 
-                                    id="{{ form.email.id_for_label }}" 
-                                    required
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm {% if form.email.errors %}border-red-300{% endif %}"
-                                    value="{{ form.email.value|default:'' }}"
-                                >
-                            </div>
-                            {% if form.email.errors %}
-                            <p class="mt-2 text-sm text-red-600">{{ form.email.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 text-right sm:px-6 space-x-3">
-                        <a href="{% url 'core:player_list' %}" class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                            Cancel
-                        </a>
-                        <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                            Save Player
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
+  <div class="md:grid md:grid-cols-3 md:gap-6">
+    <div class="md:col-span-1">
+      <div class="px-4 sm:px-0">
+        <h3 class="text-lg font-medium leading-6 text-gray-900">Player Information</h3>
+        <p class="mt-1 text-sm text-gray-600">
+          Add a new player to the roommate assignment system.
+        </p>
+      </div>
     </div>
+    <div class="mt-5 md:col-span-2 md:mt-0">
+      <form method="post">
+        {% csrf_token %}
+        <div class="shadow sm:overflow-hidden sm:rounded-md">
+          <div class="space-y-6 bg-white px-4 py-5 sm:p-6">
+            {% if form.non_field_errors %}
+            <div class="rounded-md bg-red-50 p-4">
+              <div class="flex">
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800">
+                    There were errors with your submission
+                  </h3>
+                  <div class="mt-2 text-sm text-red-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                      {% for error in form.non_field_errors %}
+                      <li>{{ error }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            <div>
+              <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Name <span class="text-red-500">*</span>
+              </label>
+              <div class="mt-1">
+                <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" required
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm {% if form.name.errors %}border-red-300{% endif %}"
+                  value="{{ form.name.value|default:'' }}">
+              </div>
+              {% if form.name.errors %}
+              <p class="mt-2 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Phone <span class="text-red-500">*</span>
+              </label>
+              <div class="mt-1">
+                <input type="tel" name="{{ form.phone.name }}" id="{{ form.phone.id_for_label }}" required
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm {% if form.phone.errors %}border-red-300{% endif %}"
+                  value="{{ form.phone.value|default:'' }}">
+              </div>
+              {% if form.phone.errors %}
+              <p class="mt-2 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Email <span class="text-red-500">*</span>
+              </label>
+              <div class="mt-1">
+                <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" required
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm {% if form.email.errors %}border-red-300{% endif %}"
+                  value="{{ form.email.value|default:'' }}">
+              </div>
+              {% if form.email.errors %}
+              <p class="mt-2 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 text-right sm:px-6 space-x-3">
+            <a href="{% url 'core:player_list' %}"
+              class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+              Cancel
+            </a>
+            <button type="submit"
+              class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+              Save Player
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}

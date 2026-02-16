@@ -1,4 +1,5 @@
 """Views for core app."""
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView
@@ -65,7 +66,9 @@ class PlayerCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         """Add success message on player creation."""
-        messages.success(self.request, f"Player {form.instance.name} created successfully!")
+        messages.success(
+            self.request, f"Player {form.instance.name} created successfully!"
+        )
         return super().form_valid(form)
 
 
@@ -76,15 +79,15 @@ class GenerateSelectionLinkView(LoginRequiredMixin, View):
         """Create a new selection link for the player."""
         player = get_object_or_404(Player, id=player_id)
         selection_link = SelectionLink.objects.create(player=player)
-        
+
         # Build the full URL for the selection page
         link_url = request.build_absolute_uri(
             reverse_lazy("core:roommate_select") + f"?id={selection_link.id}"
         )
-        
+
         messages.success(
             request,
             f"Selection link generated for {player.name}!",
         )
-        
+
         return redirect("core:player_list")

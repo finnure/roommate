@@ -1,4 +1,5 @@
 """Models for core app."""
+
 from uuid import uuid4
 
 from django.db import models

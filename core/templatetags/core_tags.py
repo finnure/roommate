@@ -1,4 +1,5 @@
 """Custom template tags for core app."""
+
 from django import template
 
 register = template.Library()

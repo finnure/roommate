@@ -1,4 +1,5 @@
 """Admin configuration for core app."""
+
 from django.contrib import admin
 
 from .models import Player, SelectionLink

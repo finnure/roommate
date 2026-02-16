@@ -25,5 +25,7 @@ urlpatterns = [
         views.GenerateSelectionLinkView.as_view(),
         name="generate_link",
     ),
-    path("select/", views.ProfileView.as_view(), name="roommate_select"),  # Placeholder for now
+    path(
+        "select/", views.ProfileView.as_view(), name="roommate_select"
+    ),  # Placeholder for now
 ]
