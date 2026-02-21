@@ -1,5 +1,81 @@
 # CHANGELOG
 
+## Sticky Navigation & Overlay Mobile Menu - February 21, 2026
+
+### User Request
+Can you make the title bar sticky so it's always visible, and on mobile open the hamburger menu over the content below instead of bumping it down?
+
+### What Was Modified
+
+#### Template Changes
+- **[core/templates/core/base.html](core/templates/core/base.html)**
+  - Added `sticky top-0 z-50` classes to nav element for sticky positioning
+  - Added `relative` class to nav for positioning context
+  - Changed mobile menu from block layout to `absolute` positioning
+  - Mobile menu now uses `top-full left-0 right-0` to overlay content below the navbar
+  - Added `bg-white shadow-lg` to mobile menu for proper overlay appearance
+
+### How It Works
+
+**Sticky Navigation:**
+- Navigation bar stays fixed at the top of the viewport when scrolling
+- Uses `z-50` to ensure it stays above page content
+- Works on all screen sizes (mobile and desktop)
+
+**Overlay Mobile Menu:**
+- Mobile menu now appears as an overlay below the navigation bar
+- Does not push page content down when opened
+- Positioned absolutely relative to the nav container
+- Full width (`left-0 right-0`) for proper mobile UX
+
+### Technical Details
+
+- `sticky top-0`: Makes nav stick to top of viewport while scrolling
+- `z-50`: High z-index ensures navbar stays on top
+- `relative`: Provides positioning context for absolute mobile menu
+- `absolute top-full`: Positions mobile menu directly below navbar (100% from top)
+- Mobile menu overlay preserves page layout without content reflow
+
+---
+
+## Mobile Hamburger Menu - February 21, 2026
+
+### User Request
+The menu for the page doesn't work on mobile. Can you add a hamburger menu that is used on small devices?
+
+### What Was Modified
+
+#### Template Changes
+- **[core/templates/core/base.html](core/templates/core/base.html)**
+  - Added hamburger menu button (visible only on mobile devices with `sm:hidden` class)
+  - Added mobile menu panel with all navigation links (Dashboard, Players, Selections, Admin, Profile)
+  - Added user info and logout button in mobile menu
+  - Hid desktop username/logout on mobile with `hidden sm:inline` and `hidden sm:block` classes
+  - Added JavaScript to toggle mobile menu visibility
+  - Menu button shows hamburger icon (☰) when closed and X icon when open
+
+### How to Use
+
+On mobile devices (screen width < 640px):
+1. Click the hamburger menu button (☰) in the top-right corner
+2. The mobile menu slides down showing all navigation links
+3. Click any link to navigate
+4. Click the X icon to close the menu
+
+On desktop (screen width ≥ 640px):
+- The standard horizontal menu remains visible
+- Hamburger menu button is hidden
+
+### Technical Details
+
+- Uses Tailwind CSS responsive breakpoints (`sm:` prefix for ≥640px)
+- Vanilla JavaScript for menu toggle (no external dependencies)
+- Icons are inline SVG for faster loading
+- Mobile menu includes user authentication info and logout button
+- Menu state managed via CSS class toggling (`hidden` class)
+
+---
+
 ## Icelandic Alphabet Sorting Support - February 21, 2026
 
 ### User Request
