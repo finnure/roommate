@@ -1,5 +1,180 @@
 # CHANGELOG
 
+## Icelandic Alphabet Sorting Support - February 21, 2026
+
+### User Request
+The sorting of names on the player page uses the English alphabet. It should account for Icelandic sorting. Á should come after A and before B, for example.
+
+### What Was Modified
+
+#### Settings Changes
+- **[roommate/settings/base.py](roommate/settings/base.py#L76-L78)**
+  - Changed `LANGUAGE_CODE` from `"en-us"` to `"is-is"` (Icelandic)
+  - Changed `TIME_ZONE` from `"UTC"` to `"Atlantic/Reykjavik"`
+
+#### Model & Database Changes
+- **[core/models.py](core/models.py#L19-L27)**: Added comment indicating Icelandic collation
+- **Migration 0005_add_icelandic_collation_to_name.py**: Database-specific collation
+  - For PostgreSQL (production): Applies `is_IS` collation to `name` field
+  - For SQLite (development): Skips collation (not supported)
+  - Uses `RunPython` migration to conditionally apply based on database vendor
+
+### How It Works
+
+**Icelandic Alphabet Order**: A, Á, B, D, Ð, E, É, F, G, H, I, Í, J, K, L, M, N, O, Ó, P, R, S, T, U, Ú, V, X, Y, Ý, Þ, Æ, Ö
+
+- In **production (PostgreSQL)**: The `name` column uses native `is_IS` collation for proper Icelandic sorting
+- In **development (SQLite)**: Basic alphabetical sorting (SQLite doesn't support Icelandic collation natively)
+- Player names will be sorted correctly in the player list view according to Icelandic alphabet rules
+
+### Technical Details
+- PostgreSQL supports ICU collations including `is_IS` for Icelandic
+- SQLite has limited collation support, so we use conditional migration
+- The migration checks `connection.vendor` to apply collation only for PostgreSQL
+- `ordering = ["name"]` in the Player model uses the database-level collation
+
+---
+
+## Formatter Configuration Added - February 21, 2026
+
+### User Request
+The code formatter was splitting Django template variables across multiple lines (e.g., `{{` on one line and `player.name }}` on the next), which causes rendering issues. Need to configure the formatter to prevent this.
+
+### What Was Created
+Created formatter configuration files to prevent template variable wrapping:
+
+#### Configuration Files
+- **[.prettierrc.json](.prettierrc.json)**: Prettier configuration
+  - HTML files: `printWidth: 200` (prevents line wrapping)
+  - HTML files: `htmlWhitespaceSensitivity: "ignore"` (better template handling)
+  - HTML files: `bracketSameLine: true` (compact tag formatting)
+  - Python files: `printWidth: 88` (Black standard)
+
+- **[.vscode/settings.json](.vscode/settings.json)**: VS Code editor settings
+  - Prettier as default formatter for HTML/Django templates
+  - Black formatter for Python files
+  - Line length: 200 for HTML, 88 for Python
+  - Format on save enabled
+
+- **[.prettierignore](.prettierignore)**: Exclude patterns
+  - Build outputs, dependencies, generated files
+
+- **[.editorconfig](.editorconfig)**: Editor-agnostic configuration
+  - Max line length: 200 for HTML files
+  - Consistent indentation rules across file types
+
+### How It Works
+The wide `printWidth` setting (200 characters) for HTML files ensures Django template variables like `{{ player.name }}` remain on single lines instead of being split during auto-formatting.
+
+### Technical Details
+- Prettier will now format HTML with 200-char width instead of default 80
+- VS Code will apply these settings on save
+- EditorConfig ensures consistency across different editors
+
+---
+
+## Bugfix: Player Import Template Variable Rendering - February 21, 2026
+
+### Issue
+When importing players, the import results table showed `{{ player.name }}` as literal text instead of rendering the actual player name. The error table similarly showed `{{ error.line }}` as literal text.
+
+### Fix
+Fixed Django template variable syntax in [core/templates/core/player_import.html](core/templates/core/player_import.html):
+- Lines 93-94: Moved `{{ player.name }}` to a single line (was split across two lines)
+- Lines 133-134: Moved `{{ error.line }}` to a single line (was split across two lines)
+
+**Root Cause**: Template variables split across multiple lines can cause rendering issues where Django treats them as literal text rather than variables to interpolate.
+
+**Testing**: Import players using the import feature and verify that the success/error tables display actual data instead of template variable syntax.
+
+---
+
+## Player Page Enhancements - February 21, 2026
+
+### User Request
+I need a few changes to the players page:
+1. Make phone and email optional
+2. Add a column to show if the selection link has been used
+3. Pagination doesn't work - there is no way for the user to switch between pages
+4. Add an import feature with comma-separated records validation
+
+### What Was Created/Modified
+
+#### Model Changes
+- **Player Model** ([core/models.py](core/models.py#L19-L25))
+  - Made `phone` field optional with `blank=True, null=True`
+  - Made `email` field optional with `blank=True, null=True`
+  - Generated migration `0004_make_phone_email_optional.py`
+
+#### Player List View Enhancements
+- **New Column**: Added "Link Used" column to player list table
+  - Shows green "Yes" badge if selection link has been used
+  - Shows gray "No" badge if link exists but not used
+  - Shows "-" if no link has been generated
+  - Reads from `SelectionLink.is_used` field
+
+- **Fixed Pagination** ([core/templates/core/player_list.html](core/templates/core/player_list.html#L102-L152))
+  - Added proper page number navigation controls
+  - Shows current page highlighted in indigo
+  - Displays page numbers with ellipsis for large page counts
+  - Shows Previous/Next arrows
+  - Mobile-responsive design with separate mobile pagination controls
+
+- **Display Empty Values**: Phone and email now show "-" when not provided
+
+#### Player Import Feature
+- **Import View** ([core/views.py](core/views.py#L82-L181))
+  - New `PlayerImportView` class-based view
+  - Processes comma-separated text input (one player per line)
+  - Validates each line with flexible format support:
+    - Name only: `John Doe`
+    - Name and phone: `John Doe, 555-1234`
+    - Name and email: `John Doe, john@example.com`
+    - Name, phone, and email: `John Doe, 555-1234, john@example.com`
+  - Auto-detects email vs phone by checking for `@` and `.`
+  - Uses atomic transactions for each player creation
+  - Returns detailed summary with:
+    - Count of successfully imported players
+    - List of imported players with their data
+    - List of failed rows with line numbers and error messages
+
+- **Import Template** ([core/templates/core/player_import.html](core/templates/core/player_import.html))
+  - Clean Tailwind UI with format instructions
+  - Large textarea for bulk input
+  - Results section showing:
+    - Success table with green highlight
+    - Error table with red highlight showing line number, data, and error
+  - Back button to return to player list
+
+- **Import Button**: Added "Import Players" button to player list page header
+
+#### URL Configuration
+- Added route: `players/import/` → `PlayerImportView`
+
+### How to Use
+
+**Import Players:**
+1. Navigate to Players page
+2. Click "Import Players" button
+3. Enter comma-separated data (one player per line)
+4. Click "Import Players" to process
+5. Review success/error summary
+6. Failed rows show specific error messages for correction
+
+**View Link Status:**
+- Player list now shows if selection links have been used in the "Link Used" column
+
+**Navigate Pages:**
+- Use pagination controls at bottom of player list to switch between pages
+- Click page numbers directly or use Previous/Next arrows
+
+### Technical Implementation
+- Email validation uses basic `@` and `.` detection
+- Phone and email fields handle NULL values in database
+- Import view uses Django's transaction.atomic() for data integrity
+- Pagination shows up to 5 page numbers around current page
+- All changes follow project's Google docstring and type hint standards
+
 ## Production Deployment Setup - February 16, 2026
 
 ### User Request

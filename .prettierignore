@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Build outputs
+dist/
+build/
+*.pyc
+__pycache__/
+
+# Static files
+staticfiles/
+static/admin/
+static/debug_toolbar/
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Migrations (optional - uncomment if you don't want to format migrations)
+# **/migrations/*.py

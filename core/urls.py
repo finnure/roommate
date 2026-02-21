@@ -21,6 +21,7 @@ urlpatterns = [
     ),
     path("players/", views.PlayerListView.as_view(), name="player_list"),
     path("players/create/", views.PlayerCreateView.as_view(), name="player_create"),
+    path("players/import/", views.PlayerImportView.as_view(), name="player_import"),
     path(
         "players/<uuid:player_id>/generate-link/",
         views.GenerateSelectionLinkView.as_view(),

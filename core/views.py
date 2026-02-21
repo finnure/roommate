@@ -78,6 +78,100 @@ class PlayerCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+class PlayerImportView(LoginRequiredMixin, TemplateView):
+    """Import players from comma-separated text."""
+
+    template_name = "core/player_import.html"
+
+    def post(self, request):
+        """Process the import data."""
+        import_data = request.POST.get("import_data", "").strip()
+
+        if not import_data:
+            messages.error(request, "Please provide data to import.")
+            return redirect("core:player_import")
+
+        lines = import_data.split("\n")
+        inserted = []
+        errors = []
+
+        for line_num, line in enumerate(lines, 1):
+            line = line.strip()
+            if not line:
+                continue
+
+            parts = [p.strip() for p in line.split(",")]
+
+            # Validate line has 1-3 values
+            if len(parts) < 1 or len(parts) > 3:
+                errors.append(
+                    {
+                        "line": line_num,
+                        "data": line,
+                        "error": f"Invalid format: expected 1-3 comma-separated values, got {len(parts)}",
+                    }
+                )
+                continue
+
+            name = parts[0]
+            phone = parts[1] if len(parts) > 1 else None
+            email = None
+
+            # If there are 3 parts, third should be email
+            if len(parts) == 3:
+                # Validate email format (basic check)
+                if "@" in parts[2] and "." in parts[2]:
+                    email = parts[2]
+                else:
+                    errors.append(
+                        {
+                            "line": line_num,
+                            "data": line,
+                            "error": f"Invalid email format: {parts[2]}",
+                        }
+                    )
+                    continue
+            # If there are 2 parts, check if second is email
+            elif len(parts) == 2:
+                if "@" in parts[1] and "." in parts[1]:
+                    email = parts[1]
+                    phone = None
+
+            # Validate name is not empty
+            if not name:
+                errors.append(
+                    {"line": line_num, "data": line, "error": "Name cannot be empty"}
+                )
+                continue
+
+            # Create the player
+            try:
+                with transaction.atomic():
+                    player = Player.objects.create(name=name, phone=phone, email=email)
+                    inserted.append(
+                        {"name": name, "phone": phone or "-", "email": email or "-"}
+                    )
+            except Exception as e:
+                errors.append({"line": line_num, "data": line, "error": str(e)})
+
+        # Build success/error messages
+        if inserted:
+            messages.success(
+                request, f"Successfully imported {len(inserted)} player(s)."
+            )
+
+        if errors:
+            messages.warning(
+                request, f"Failed to import {len(errors)} line(s). See details below."
+            )
+
+        return render(
+            request,
+            self.template_name,
+            {"inserted": inserted, "errors": errors, "import_data": import_data},
+        )
+
+
 class GenerateSelectionLinkView(LoginRequiredMixin, View):
     """Generate a selection link for a player."""
 

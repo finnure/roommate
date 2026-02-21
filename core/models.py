@@ -20,11 +20,11 @@ class Player(BaseModel):
     """Player model for roommate assignment."""
 
     name = models.CharField(max_length=255)
-    phone = models.CharField(max_length=20)
-    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
 
     class Meta:
-        ordering = ["name"]
+        ordering = ["name"]  # Uses is_IS collation in PostgreSQL via migration
 
     def __str__(self) -> str:
         """Return string representation of player."""

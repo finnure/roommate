@@ -10,6 +10,65 @@ This project is for a soccer team going to Portugal on a trip. The hotel has roo
 5. The admin site should have a page to view the final roommate assignments and a way to export the data as a CSV file.
 
 
+# ⚠️ CRITICAL: CHANGELOG.md UPDATE RULES ⚠️
+
+**MANDATORY: After EVERY code change, file creation, configuration update, or bugfix, you MUST update CHANGELOG.md. NO EXCEPTIONS.**
+
+## When to Update CHANGELOG.md (ALL of these):
+1. ✅ **New Features**: Any new functionality added to the project
+2. ✅ **Bugfixes**: ANY bug that was fixed, no matter how small
+3. ✅ **Configuration Changes**: New/modified config files (.prettierrc, .vscode/settings.json, etc.)
+4. ✅ **Model Changes**: Database schema modifications
+5. ✅ **Template Updates**: New or modified HTML templates
+6. ✅ **View/URL Changes**: New views, modified business logic
+7. ✅ **Deployment Changes**: Docker, nginx, deployment scripts
+8. ✅ **Dependency Updates**: New packages or version changes
+
+## CHANGELOG Entry Format:
+
+### For Features/Changes:
+```
+## [Feature Title] - [Date]
+
+### User Request
+[Original user request verbatim]
+
+### What Was Created/Modified
+[Detailed list with file links]
+
+### How to Use
+[Usage instructions]
+
+### Technical Details
+[Implementation notes]
+```
+
+### For Bugfixes:
+```
+## Bugfix: [Brief Title] - [Date]
+
+### Issue
+[Clear description of the bug]
+
+### Fix
+[What was fixed with file paths and line numbers]
+
+**Root Cause**: [Why it happened]
+
+**Testing**: [How to verify the fix]
+```
+
+## Verification Checklist
+Before completing ANY task, verify:
+- [ ] Did I create or modify any files?
+- [ ] Did I fix a bug?
+- [ ] Did I add a feature?
+- [ ] **If YES to any: Did I update CHANGELOG.md?**
+
+**If you did NOT update CHANGELOG.md, STOP and do it NOW.**
+
+---
+
 # Copilot Instructions for Django Project
 
 Follow these rules for all suggestions:
@@ -27,16 +86,7 @@ Follow these rules for all suggestions:
 4. **Lint/Format**: Black, isort, flake8. Pre-commit hooks.
 5. **Testing**: `pytest -v --cov=core`.
 6. **No Bloat**: Minimal deps; justify additions.
-7. **CHANGELOG Updates**: After completing any new feature or significant change, automatically update CHANGELOG.md with:
-   - A descriptive title for the feature
-   - The original user input/request
-   - What was created/implemented
-   - Key features and functionality
-   - How to use/test the feature
-   - Technical implementation details
-   Follow the existing format in CHANGELOG.md for consistency.
-8. **Documentation**: Update README.md and relevant docs with new features or changes.
-9. **Bugfixes**: Update changelog with bug fixes with a brief description of the fix.
+7. **Documentation**: Update README.md and relevant docs with new features or changes.
 
 Example model:
 ```python

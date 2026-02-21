@@ -1,0 +1,28 @@
+{
+  "printWidth": 120,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "es5",
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "htmlWhitespaceSensitivity": "ignore",
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "printWidth": 200,
+        "htmlWhitespaceSensitivity": "ignore",
+        "bracketSameLine": true
+      }
+    },
+    {
+      "files": "*.py",
+      "options": {
+        "printWidth": 88,
+        "tabWidth": 4
+      }
+    }
+  ]
+}
