@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Roommate Admin{% endblock %}</title>
+  {% load static %}
+  <link rel="icon" type="image/svg+xml" href="{% static 'core/img/favicon.svg' %}">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -14,7 +16,10 @@
       <div class="flex justify-between h-16">
         <div class="flex">
           <div class="flex-shrink-0 flex items-center">
-            <h1 class="text-xl font-bold text-gray-800">Roommate Admin</h1>
+            <a href="{% url 'core:dashboard' %}" class="flex items-center space-x-2">
+              <img src="{% static 'core/img/logo.svg' %}" alt="Roommate Admin" class="h-8 w-8">
+              <span class="text-xl font-bold text-gray-800 hidden md:inline">Roommate Admin</span>
+            </a>
           </div>
           <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
             <a href="{% url 'core:dashboard' %}"

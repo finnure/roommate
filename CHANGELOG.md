@@ -1,5 +1,58 @@
 # CHANGELOG
 
+## Favicon and Logo Icons - February 21, 2026
+
+### User Request
+favicon is missing, can you create one for this project? could you also create an svg icon to use instead of "Roommate Admin" in the navbar?
+
+### What Was Created
+
+#### New Static Assets
+- **[core/static/core/img/favicon.svg](core/static/core/img/favicon.svg)**
+  - Created SVG favicon with door/roommate theme
+  - Blue circle background (#3B82F6)
+  - Dark door with center split representing roommates
+  - Gold door knobs
+  - Number "3" at bottom representing 3 roommate selections
+  
+- **[core/static/core/img/logo.svg](core/static/core/img/logo.svg)**
+  - Created SVG logo for navbar
+  - 32x32 pixel optimized size
+  - Blue circular badge design
+  - Door icon with split in middle
+  - Small bed icons in corners for hotel/room theme
+  - Matches favicon design language
+
+#### Template Changes
+- **[core/templates/core/base.html](core/templates/core/base.html)**
+  - Added `{% load static %}` tag in head section
+  - Added favicon link: `<link rel="icon" type="image/svg+xml" href="{% static 'core/img/favicon.svg' %}">`
+  - Replaced text "Roommate Admin" with logo image and text combo
+  - Logo visible on all screen sizes (h-8 w-8)
+  - Text "Roommate Admin" hidden on mobile (`hidden md:inline`) to save space
+  - Made logo clickable, linking to dashboard
+  - Added flex layout with spacing for logo + text
+
+### Design Details
+
+**Icon Theme:**
+- Door with vertical split = roommates/shared space
+- Blue color scheme matches Tailwind's primary blue
+- Professional but friendly appearance
+- SVG format = crisp at any resolution, small file size
+
+**Responsive Behavior:**
+- Desktop: Shows logo + "Roommate Admin" text
+- Mobile/Tablet: Shows logo only (text hidden to save navbar space)
+- Logo always clickable to return to dashboard
+
+### Technical Details
+- Using SVG format for both favicon and logo (modern, scalable)
+- Favicon auto-detected by browsers via `<link rel="icon">`
+- Static files served from `core/static/core/img/` directory
+- Django's `{% static %}` template tag handles URL generation
+- No additional static file configuration needed (already set in base.py)
+
 ## Sticky Navigation & Overlay Mobile Menu - February 21, 2026
 
 ### User Request
