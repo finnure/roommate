@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## Bugfix: PostgreSQL Icelandic Collation Migration Error - February 25, 2026
+
+### Issue
+Migration `0005_add_icelandic_collation_to_name` was failing in production PostgreSQL with error:
+```
+django.db.utils.ProgrammingError: collation "is_IS" for encoding "UTF8" does not exist
+```
+
+The migration assumed the `is_IS` collation existed in PostgreSQL, but it needs to be created first or the system needs specific locale support.
+
+### Fix
+Updated [core/migrations/0005_add_icelandic_collation_to_name.py](core/migrations/0005_add_icelandic_collation_to_name.py):
+- Added fallback logic to try multiple collation approaches:
+  1. **First try**: Create ICU collation `is_IS_icu` with `provider = icu, locale = 'is-IS'` (most portable)
+  2. **Second try**: Create standard collation `is_IS` with `LC_COLLATE` and `LC_CTYPE` set to `is_IS.UTF-8`
+  3. **Fallback**: If both fail, skip collation (allows migration to succeed, falls back to default sorting)
+- Uses `CREATE COLLATION IF NOT EXISTS` to avoid errors if collation already exists
+- Wrapped in try-except blocks for graceful degradation
+
+**Root Cause**: PostgreSQL doesn't automatically have all locale collations available. They need to be created explicitly or require system locale support. ICU collations are more portable across different PostgreSQL installations.
+
+**Testing**: 
+1. Run `python manage.py migrate core 0004` to rollback
+2. Run `python manage.py migrate` to reapply with the fixed migration
+3. Verify no errors occur
+4. In production, Icelandic sorting will work if ICU is available; otherwise falls back gracefully
+
+---
+
 ## Drag-and-Drop Room Arrangement Page - February 25, 2026
 
 ### User Request

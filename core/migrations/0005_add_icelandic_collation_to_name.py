@@ -6,8 +6,30 @@ from django.db import connection, migrations, models
 def forwards_func(apps, schema_editor):
     """Apply collation only for PostgreSQL."""
     if connection.vendor == 'postgresql':
+        # First, try to create the ICU collation if it doesn't exist
+        # ICU collations are more portable and work across different PostgreSQL setups
+        try:
+            schema_editor.execute(
+                "CREATE COLLATION IF NOT EXISTS \"is_IS_icu\" "
+                "(provider = icu, locale = 'is-IS')"
+            )
+            collation_name = 'is_IS_icu'
+        except Exception:
+            # If ICU is not available, try standard collations
+            try:
+                schema_editor.execute(
+                    "CREATE COLLATION IF NOT EXISTS \"is_IS\" "
+                    "(LC_COLLATE = 'is_IS.UTF-8', LC_CTYPE = 'is_IS.UTF-8')"
+                )
+                collation_name = 'is_IS'
+            except Exception:
+                # If both fail, just use default collation (no Icelandic sorting)
+                # This allows migration to succeed even without proper locale support
+                return
+        
+        # Apply the collation to the name column
         schema_editor.execute(
-            'ALTER TABLE core_player ALTER COLUMN name TYPE VARCHAR(255) COLLATE "is_IS"'
+            f'ALTER TABLE core_player ALTER COLUMN name TYPE VARCHAR(255) COLLATE "{collation_name}"'
         )
 
 
@@ -28,3 +50,4 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(forwards_func, reverse_func),
     ]
+
