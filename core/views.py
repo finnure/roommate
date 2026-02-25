@@ -1,6 +1,8 @@
 """Views for core app."""
 
 import csv
+import json
+import math
 from collections import defaultdict
 from typing import Dict, List, Set
 
@@ -699,6 +701,142 @@ class ExportSelectionsView(LoginRequiredMixin, View):
             )
 
         return response
+
+
+class RoomArrangeView(LoginRequiredMixin, View):
+    """Drag-and-drop room arrangement page."""
+
+    template_name = "core/room_arrange.html"
+
+    def get(self, request):
+        """Render the arrangement page with players and rooms serialised for JS."""
+        # All players who have submitted at least one selection (any status)
+        selections = (
+            RoommateSelection.objects.select_related(
+                "player", "roommate_1", "roommate_2", "roommate_3"
+            )
+            .order_by("player__name", "-created_at")
+            .distinct()
+        )
+
+        # Deduplicate: keep only the latest selection per player
+        seen: Set[str] = set()
+        player_selections: Dict[str, dict] = {}
+        for sel in selections:
+            pid = str(sel.player.id)
+            if pid not in seen:
+                seen.add(pid)
+                player_selections[pid] = {
+                    "id": pid,
+                    "name": sel.player.name,
+                    "choices": [
+                        sel.roommate_1.name,
+                        sel.roommate_2.name,
+                        sel.roommate_3.name,
+                    ],
+                }
+
+        # Current room assignments
+        rooms_qs = Room.objects.prefetch_related("assignments__player").order_by(
+            "name"
+        )
+        rooms_data = []
+        assigned_player_ids: Set[str] = set()
+        for room in rooms_qs:
+            members = []
+            for assignment in room.assignments.all():
+                pid = str(assignment.player.id)
+                members.append(pid)
+                assigned_player_ids.add(pid)
+            rooms_data.append(
+                {
+                    "id": str(room.id),
+                    "name": room.name,
+                    "is_finalized": room.is_finalized,
+                    "player_ids": members,
+                }
+            )
+
+        # Players not yet in any room
+        unassigned = [
+            p for pid, p in player_selections.items() if pid not in assigned_player_ids
+        ]
+
+        n_players = len(player_selections)
+        needed_rooms = math.ceil(n_players / 3) + 1 if n_players > 0 else 1
+
+        context = {
+            "players_json": json.dumps(player_selections),
+            "rooms_json": json.dumps(rooms_data),
+            "unassigned_json": json.dumps([p["id"] for p in unassigned]),
+            "needed_rooms": needed_rooms,
+            "n_players": n_players,
+        }
+        return render(request, self.template_name, context)
+
+
+class SaveRoomArrangeView(LoginRequiredMixin, View):
+    """AJAX endpoint — save the dragged room layout to the database."""
+
+    def post(self, request):
+        """Accept JSON body and persist room assignments atomically."""
+        try:
+            payload = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        rooms_payload = payload.get("rooms", [])
+        if not isinstance(rooms_payload, list):
+            return JsonResponse({"error": "Invalid payload shape"}, status=400)
+
+        try:
+            with transaction.atomic():
+                # Track which DB rooms we touched so we can rename sequentially
+                room_counter = 0
+                for item in rooms_payload:
+                    room_id = item.get("room_id")  # None / "new" / UUID string
+                    player_ids = item.get("player_ids", [])
+                    room_name = item.get("name", "")
+
+                    if not player_ids:
+                        # Empty room — if it exists in DB and is not finalized, delete it
+                        if room_id and room_id not in ("new", None):
+                            try:
+                                room = Room.objects.get(id=room_id)
+                                if not room.is_finalized:
+                                    room.delete()
+                            except Room.DoesNotExist:
+                                pass
+                        continue
+
+                    room_counter += 1
+
+                    if room_id and room_id not in ("new",):
+                        # Existing room
+                        try:
+                            room = Room.objects.get(id=room_id)
+                        except Room.DoesNotExist:
+                            room = Room.objects.create(name=room_name or f"Room {room_counter}")
+                    else:
+                        room = Room.objects.create(name=room_name or f"Room {room_counter}")
+
+                    if room.is_finalized:
+                        # Never touch finalized rooms
+                        continue
+
+                    # Rebuild assignments
+                    room.assignments.all().delete()
+                    for pid in player_ids:
+                        try:
+                            player = Player.objects.get(id=pid)
+                            RoomAssignment.objects.create(room=room, player=player)
+                        except Player.DoesNotExist:
+                            pass
+
+        except Exception as exc:
+            return JsonResponse({"error": str(exc)}, status=500)
+
+        return JsonResponse({"success": True})
 
 
 def health_check(request):

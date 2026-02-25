@@ -55,5 +55,11 @@ urlpatterns = [
         views.DeleteRoomView.as_view(),
         name="delete_room",
     ),
+    path("rooms/arrange/", views.RoomArrangeView.as_view(), name="room_arrange"),
+    path(
+        "rooms/arrange/save/",
+        views.SaveRoomArrangeView.as_view(),
+        name="save_room_arrange",
+    ),
     path("health/", views.health_check, name="health_check"),
 ]

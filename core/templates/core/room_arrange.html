@@ -1,0 +1,323 @@
+{% extends "core/base.html" %}
+
+{% block title %}Arrange Rooms - Roommate Admin{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Arrange Rooms</h1>
+    <div class="flex items-center gap-3">
+      <span id="save-status" class="text-sm text-gray-500 hidden"></span>
+      <button
+        id="save-btn"
+        class="inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+        </svg>
+        Save Layout
+      </button>
+    </div>
+  </div>
+
+  {% if n_players == 0 %}
+  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+    <p class="text-yellow-800 font-medium">No players have submitted selections yet.</p>
+    <p class="text-yellow-700 text-sm mt-1">Players will appear here once they fill in their roommate preferences.</p>
+  </div>
+  {% else %}
+
+  <!-- Legend -->
+  <div class="flex flex-wrap gap-4 mb-5 text-sm text-gray-600">
+    <span class="flex items-center gap-1.5">
+      <span class="inline-block w-3 h-3 rounded-full bg-indigo-400"></span> Player tile (drag to move)
+    </span>
+    <span class="flex items-center gap-1.5">
+      <span class="inline-block w-3 h-3 rounded-full bg-green-400"></span> 3 players (full)
+    </span>
+    <span class="flex items-center gap-1.5">
+      <span class="inline-block w-3 h-3 rounded-full bg-red-400"></span> Over capacity
+    </span>
+    <span class="flex items-center gap-1.5">
+      <span class="inline-block w-3 h-3 rounded-full bg-gray-300"></span> Finalized (locked)
+    </span>
+  </div>
+
+  <!-- Unassigned pool -->
+  <div class="bg-white shadow rounded-lg mb-8">
+    <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+      <h2 class="text-base font-semibold text-gray-700">Unassigned Players</h2>
+      <span id="pool-count" class="text-sm text-gray-500">0 players</span>
+    </div>
+    <div
+      id="pool"
+      data-room-id="unassigned"
+      class="p-4 min-h-[80px] flex flex-wrap gap-3 sortable-zone"
+    >
+      <!-- tiles injected by JS -->
+    </div>
+  </div>
+
+  <!-- Room grid -->
+  <div id="room-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    <!-- room cards injected by JS -->
+  </div>
+
+  {% endif %}
+</div>
+
+<!-- Player tile template (hidden) -->
+<template id="tile-template">
+  <div class="player-tile bg-white border border-gray-200 rounded-lg shadow-sm px-3 py-2 cursor-grab active:cursor-grabbing select-none w-44">
+    <p class="font-semibold text-gray-900 text-sm truncate tile-name"></p>
+    <ul class="mt-1 space-y-0.5">
+      <li class="text-xs text-gray-400 truncate tile-choice-1"></li>
+      <li class="text-xs text-gray-400 truncate tile-choice-2"></li>
+      <li class="text-xs text-gray-400 truncate tile-choice-3"></li>
+    </ul>
+  </div>
+</template>
+
+<!-- Room card template (hidden) -->
+<template id="room-template">
+  <div class="room-card bg-white shadow rounded-lg overflow-hidden">
+    <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="room-title text-sm font-semibold text-gray-700"></h3>
+      <span class="room-counter text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">0 / 3</span>
+    </div>
+    <div class="room-drop-zone p-3 min-h-[120px] flex flex-wrap gap-2 sortable-zone transition-colors duration-150"></div>
+  </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+  .chosen-tile { outline: 2px solid #6366f1; outline-offset: 2px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<!-- JSON data islands — must come before the main script -->
+<script id="players-data" type="application/json">{{ players_json|safe }}</script>
+<script id="rooms-data" type="application/json">{{ rooms_json|safe }}</script>
+<script id="unassigned-data" type="application/json">{{ unassigned_json|safe }}</script>
+<script>
+(function () {
+  // ── Data bootstrapped from Django ──────────────────────────────────────────
+  const PLAYERS   = JSON.parse(document.getElementById('players-data').textContent);
+  const ROOMS     = JSON.parse(document.getElementById('rooms-data').textContent);
+  const UNASSIGNED = JSON.parse(document.getElementById('unassigned-data').textContent);
+  const SAVE_URL  = "{% url 'core:save_room_arrange' %}";
+  const NEEDED    = {{ needed_rooms }};
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function getCsrfToken() {
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : '';
+  }
+
+  function makeTile(playerId) {
+    const player = PLAYERS[playerId];
+    if (!player) return null;
+    const tmpl = document.getElementById('tile-template');
+    const tile = tmpl.content.cloneNode(true).querySelector('.player-tile');
+    tile.dataset.playerId = playerId;
+    tile.querySelector('.tile-name').textContent = player.name;
+    const choices = player.choices || [];
+    tile.querySelector('.tile-choice-1').textContent = choices[0] ? '→ ' + choices[0] : '';
+    tile.querySelector('.tile-choice-2').textContent = choices[1] ? '→ ' + choices[1] : '';
+    tile.querySelector('.tile-choice-3').textContent = choices[2] ? '→ ' + choices[2] : '';
+    return tile;
+  }
+
+  function updateCounter(zone) {
+    const card = zone.closest('.room-card');
+    if (!card) return;
+    const count = zone.querySelectorAll('.player-tile').length;
+    const counter = card.querySelector('.room-counter');
+    counter.textContent = count + ' / 3';
+    counter.classList.remove('bg-gray-100', 'text-gray-600', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+    if (count === 0) {
+      counter.classList.add('bg-gray-100', 'text-gray-600');
+      zone.classList.remove('bg-green-50', 'bg-red-50', 'ring-2', 'ring-green-300', 'ring-red-300');
+    } else if (count < 3) {
+      counter.classList.add('bg-gray-100', 'text-gray-600');
+      zone.classList.remove('bg-green-50', 'bg-red-50', 'ring-2', 'ring-green-300', 'ring-red-300');
+    } else if (count === 3) {
+      counter.classList.add('bg-green-100', 'text-green-700');
+      zone.classList.remove('bg-red-50', 'ring-2', 'ring-red-300');
+      zone.classList.add('bg-green-50', 'ring-2', 'ring-green-300');
+    } else {
+      counter.classList.add('bg-red-100', 'text-red-700');
+      zone.classList.remove('bg-green-50', 'ring-2', 'ring-green-300');
+      zone.classList.add('bg-red-50', 'ring-2', 'ring-red-300');
+    }
+  }
+
+  function updatePoolCount() {
+    const pool = document.getElementById('pool');
+    const count = pool.querySelectorAll('.player-tile').length;
+    document.getElementById('pool-count').textContent =
+      count === 1 ? '1 player' : count + ' players';
+  }
+
+  // ── Build rooms ────────────────────────────────────────────────────────────
+  const grid = document.getElementById('room-grid');
+  const roomCardMap = {};  // roomId (or 'new-N') → { zone, isFinalized }
+  const roomMeta = {};     // same key → { dbId: string|null, name: string }
+
+  // Existing DB rooms
+  ROOMS.forEach((room) => {
+    const tmpl = document.getElementById('room-template');
+    const card = tmpl.content.cloneNode(true).querySelector('.room-card');
+    card.dataset.roomId = room.id;
+    card.querySelector('.room-title').textContent = room.name;
+    const zone = card.querySelector('.room-drop-zone');
+    zone.dataset.roomId = room.id;
+
+    if (room.is_finalized) {
+      zone.classList.add('bg-gray-50', 'opacity-75');
+      const badge = document.createElement('span');
+      badge.className = 'text-xs text-gray-400 italic w-full text-center py-2';
+      badge.textContent = 'Finalized – locked';
+      zone.appendChild(badge);
+    }
+
+    room.player_ids.forEach((pid) => {
+      const tile = makeTile(pid);
+      if (tile) {
+        if (room.is_finalized) tile.classList.add('opacity-60', 'cursor-not-allowed');
+        zone.appendChild(tile);
+      }
+    });
+
+    grid.appendChild(card);
+    roomCardMap[room.id] = { zone, isFinalized: room.is_finalized };
+    roomMeta[room.id] = { dbId: room.id, name: room.name };
+    updateCounter(zone);
+  });
+
+  // Extra empty rooms to reach NEEDED total
+  const existingCount = ROOMS.length;
+  for (let i = existingCount + 1; i <= NEEDED; i++) {
+    const key = 'new-' + i;
+    const tmpl = document.getElementById('room-template');
+    const card = tmpl.content.cloneNode(true).querySelector('.room-card');
+    card.dataset.roomId = key;
+    const title = 'Room ' + i;
+    card.querySelector('.room-title').textContent = title;
+    const zone = card.querySelector('.room-drop-zone');
+    zone.dataset.roomId = key;
+    grid.appendChild(card);
+    roomCardMap[key] = { zone, isFinalized: false };
+    roomMeta[key] = { dbId: null, name: title };
+    updateCounter(zone);
+  }
+
+  // ── Populate pool ──────────────────────────────────────────────────────────
+  const pool = document.getElementById('pool');
+  UNASSIGNED.forEach((pid) => {
+    const tile = makeTile(pid);
+    if (tile) pool.appendChild(tile);
+  });
+  updatePoolCount();
+
+  // ── SortableJS ─────────────────────────────────────────────────────────────
+  const sortableInstances = [];
+
+  function makeOnEnd() {
+    return function (evt) {
+      // Update counters for source and destination
+      if (evt.from) updateCounter(evt.from);
+      if (evt.to)   updateCounter(evt.to);
+      updatePoolCount();
+    };
+  }
+
+  // Pool sortable
+  sortableInstances.push(new Sortable(pool, {
+    group: { name: 'players', pull: true, put: true },
+    animation: 150,
+    ghostClass: 'opacity-30',
+    chosenClass: 'chosen-tile',
+    onEnd: makeOnEnd(),
+  }));
+
+  // Room drop zones
+  Object.entries(roomCardMap).forEach(([key, { zone, isFinalized }]) => {
+    sortableInstances.push(new Sortable(zone, {
+      group: { name: 'players', pull: !isFinalized, put: !isFinalized },
+      animation: 150,
+      ghostClass: 'opacity-30',
+      chosenClass: 'chosen-tile',
+      disabled: isFinalized,
+      filter: isFinalized ? '.player-tile' : undefined,
+      onEnd: makeOnEnd(),
+    }));
+  });
+
+  // ── Save ───────────────────────────────────────────────────────────────────
+  const saveBtn  = document.getElementById('save-btn');
+  const saveStatus = document.getElementById('save-status');
+
+  function buildPayload() {
+    const rooms = [];
+
+    // Pool players don't belong to any room — skip them (unassigned)
+    // Each room card
+    Object.entries(roomCardMap).forEach(([key, { zone, isFinalized }]) => {
+      const playerIds = Array.from(zone.querySelectorAll('.player-tile'))
+        .map((t) => t.dataset.playerId);
+      const meta = roomMeta[key];
+      rooms.push({
+        room_id: meta.dbId,   // null for new rooms
+        name: meta.name,
+        player_ids: playerIds,
+      });
+    });
+
+    return { rooms };
+  }
+
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    saveStatus.textContent = 'Saving…';
+    saveStatus.classList.remove('hidden', 'text-red-600', 'text-green-600');
+    saveStatus.classList.add('text-gray-500');
+
+    try {
+      const resp = await fetch(SAVE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify(buildPayload()),
+      });
+
+      const data = await resp.json();
+
+      if (resp.ok && data.success) {
+        saveStatus.textContent = '✓ Saved!';
+        saveStatus.classList.remove('text-gray-500', 'text-red-600');
+        saveStatus.classList.add('text-green-600');
+        // Update dbId for any newly created rooms by reloading room meta
+        // (simple approach: reload page after short delay to refresh IDs)
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        saveStatus.textContent = '✗ ' + (data.error || 'Save failed');
+        saveStatus.classList.remove('text-gray-500', 'text-green-600');
+        saveStatus.classList.add('text-red-600');
+      }
+    } catch (err) {
+      saveStatus.textContent = '✗ Network error';
+      saveStatus.classList.remove('text-gray-500', 'text-green-600');
+      saveStatus.classList.add('text-red-600');
+    } finally {
+      saveBtn.disabled = false;
+      saveStatus.classList.remove('hidden');
+    }
+  });
+})();
+</script>
+{% endblock %}

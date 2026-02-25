@@ -1,6 +1,32 @@
 # CHANGELOG
 
-## Favicon and Logo Icons - February 21, 2026
+## Drag-and-Drop Room Arrangement Page - February 25, 2026
+
+### User Request
+A page where players can be dragged and dropped between rooms. Each player should be a tile showing their name and their three chosen names. Room containers with 3 slots each. Number of rooms = ceil(selections / 3) + 1. Shows all players that have made a selection.
+
+### What Was Created/Modified
+
+- [core/views.py](core/views.py) — Added `RoomArrangeView` (GET, builds page context with serialised player/room JSON) and `SaveRoomArrangeView` (POST JSON, atomically rebuilds `RoomAssignment` rows; skips finalized rooms)
+- [core/urls.py](core/urls.py) — Added `rooms/arrange/` → `core:room_arrange` and `rooms/arrange/save/` → `core:save_room_arrange`
+- [core/templates/core/base.html](core/templates/core/base.html) — Added "Arrange Rooms" link in desktop and mobile nav; added `{% block extra_js %}` slot before `</body>`
+- [core/templates/core/room_arrange.html](core/templates/core/room_arrange.html) — New template: unassigned player pool, responsive room grid, SortableJS drag-and-drop, Save button with AJAX + toast feedback
+
+### How to Use
+1. Log in as admin and click **Arrange Rooms** in the nav.
+2. Drag player tiles from the unassigned pool (or other rooms) into any room container.
+3. Tiles show the player's name and their three roommate choices.
+4. A counter badge on each room turns green at exactly 3 players and red if over capacity.
+5. Finalized rooms are locked (grey, not draggable).
+6. Click **Save Layout** — the layout is POSTed as JSON and the page reloads with fresh DB state.
+
+### Technical Details
+- SortableJS 1.15.6 loaded from jsDelivr CDN — no new Python dependencies.
+- Django context passes three JSON data islands (`players-data`, `rooms-data`, `unassigned-data`) as `<script type="application/json">` elements so the JS bootstraps without an extra API call.
+- `SaveRoomArrangeView` uses a single `transaction.atomic()` block; new rooms (client-side `room_id: null`) are created on save and the page reload refreshes their UUIDs.
+- `needed_rooms = ceil(n_players / 3) + 1` is computed in the view and passed to the template.
+
+
 
 ### User Request
 favicon is missing, can you create one for this project? could you also create an svg icon to use instead of "Roommate Admin" in the navbar?
